@@ -28,7 +28,17 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-## Run
+## Download Windows Installer
+
+For tagged releases, download the Windows installer from GitHub Releases:
+
+```text
+GPT-Image-Studio-Setup-<version>.exe
+```
+
+The installer sets up the app under Program Files and creates Start Menu shortcuts.
+
+## Run from source
 
 ```bash
 python main.py
@@ -111,6 +121,42 @@ python -m compileall -q main.py gpt_image_studio tests
 python tests/test_param_mapping.py
 ```
 
+## Build Windows installer locally
+
+On Windows, install dependencies and build the one-folder executable:
+
+```powershell
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -r requirements-build.txt
+python -m compileall -q main.py gpt_image_studio tests
+python tests/test_param_mapping.py
+pyinstaller --clean --noconfirm GPT-Image-Studio.spec
+```
+
+If Inno Setup 6 is installed, build the installer:
+
+```powershell
+& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=0.1.0" "installer\GPT-Image-Studio.iss"
+```
+
+The installer is written to:
+
+```text
+dist/installer/GPT-Image-Studio-Setup-0.1.0.exe
+```
+
+## Release process
+
+Maintainers can publish a release by pushing a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Tag pushes matching `v*` trigger the GitHub Actions workflow. The workflow runs source checks, builds the Windows app with PyInstaller, packages it with Inno Setup, creates a GitHub Release, and uploads the installer.
+
 ## Proxy Notes
 
 If you use an OpenAI-compatible proxy, behavior may differ from the official API. Some proxies cap `n` to 1, reject transparent background requests, or only support a subset of sizes. The app logs both UI parameters and final API request parameters to help verify what is actually sent.
@@ -133,13 +179,23 @@ If you use an OpenAI-compatible proxy, behavior may differ from the official API
 - 支持中文 / English 切换
 - 配置、图片和历史记录都保存在本地
 
-## 安装
+## 下载 Windows 安装包
+
+每个正式版本会在 GitHub Releases 中提供 Windows 安装包：
+
+```text
+GPT-Image-Studio-Setup-<version>.exe
+```
+
+下载后双击安装，会安装到 Program Files 并创建开始菜单快捷方式。
+
+## 安装源码依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 启动
+## 从源码启动
 
 ```bash
 python main.py
@@ -184,6 +240,42 @@ run.bat
 python -m compileall -q main.py gpt_image_studio tests
 python tests/test_param_mapping.py
 ```
+
+## 本地构建 Windows 安装包
+
+在 Windows 上执行：
+
+```powershell
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -r requirements-build.txt
+python -m compileall -q main.py gpt_image_studio tests
+python tests/test_param_mapping.py
+pyinstaller --clean --noconfirm GPT-Image-Studio.spec
+```
+
+如果本机安装了 Inno Setup 6，可以继续打包安装程序：
+
+```powershell
+& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=0.1.0" "installer\GPT-Image-Studio.iss"
+```
+
+安装包输出位置：
+
+```text
+dist/installer/GPT-Image-Studio-Setup-0.1.0.exe
+```
+
+## 发布流程
+
+维护者推送版本标签即可触发 GitHub Actions 自动打包并发布：
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+匹配 `v*` 的标签会触发 Windows 构建流程：运行源码检查，使用 PyInstaller 构建应用，使用 Inno Setup 生成安装包，并把安装包上传到 GitHub Release。
 
 ## 代理说明
 

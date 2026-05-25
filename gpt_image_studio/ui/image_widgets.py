@@ -22,8 +22,8 @@ class ImageChip(QFrame):
         self.setStyleSheet("QFrame{background:transparent;border:none;}")
 
         self.thumb = QLabel(self)
+        self.thumb.setObjectName("chip-thumb")
         self.thumb.setGeometry(0, 0, 54, 54)
-        self.thumb.setStyleSheet("border-radius:8px;background:#252525;")
         self.thumb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pix = QPixmap(path)
         if not pix.isNull():
@@ -57,33 +57,23 @@ class DropZone(QWidget):
 
         # 空状态提示
         self._hint = QLabel(self._tr("drop_hint"))
+        self._hint.setObjectName("drop-hint")
         self._hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._hint.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self._hint.setStyleSheet("""
-            QLabel{background:#111;border:1.5px dashed #2a2a2a;border-radius:10px;
-                color:#444;font-size:12px;padding:14px 10px;}
-            QLabel:hover{border-color:#3d3d3d;color:#666;}
-        """)
         self._hint.mousePressEvent = lambda e: self._pick()
         outer.addWidget(self._hint)
 
         # 有图状态
         self._chip_row = QWidget()
-        self._chip_row.setStyleSheet(
-            "QWidget{background:#111;border:1.5px solid #1e1e1e;border-radius:10px;}"
-        )
+        self._chip_row.setObjectName("drop-chip-row")
         cr = QHBoxLayout(self._chip_row)
         cr.setContentsMargins(10, 6, 10, 6); cr.setSpacing(8)
         self._chips = QHBoxLayout(); self._chips.setSpacing(8)
         cr.addLayout(self._chips)
         cr.addStretch()
         self.add_btn = QPushButton(self._tr("add_image"))
+        self.add_btn.setObjectName("card-action-btn")
         self.add_btn.setFixedHeight(30)
-        self.add_btn.setStyleSheet("""
-            QPushButton{background:#1e1e1e;border:1px solid #2e2e2e;border-radius:8px;
-                color:#777;font-size:11px;padding:0 10px;}
-            QPushButton:hover{background:#252525;color:#aaa;}
-        """)
         self.add_btn.clicked.connect(self._pick); cr.addWidget(self.add_btn)
         self._chip_row.setVisible(False)
         outer.addWidget(self._chip_row)
@@ -118,24 +108,14 @@ class DropZone(QWidget):
         else:
             self._hint.setVisible(True); self._chip_row.setVisible(False)
 
+    def apply_theme(self):
+        self._hint.style().unpolish(self._hint); self._hint.style().polish(self._hint)
+        self._chip_row.style().unpolish(self._chip_row); self._chip_row.style().polish(self._chip_row)
+
     def _set_drag_highlight(self, on: bool):
-        if on:
-            self._hint.setStyleSheet("""
-                QLabel{background:#120d22;border:1.5px dashed #7b2ff7;
-                    border-radius:10px;color:#aa77ff;font-size:12px;padding:14px 10px;}
-            """)
-            self._chip_row.setStyleSheet(
-                "QWidget{background:#120d22;border:1.5px solid #7b2ff7;border-radius:10px;}"
-            )
-        else:
-            self._hint.setStyleSheet("""
-                QLabel{background:#111;border:1.5px dashed #2a2a2a;border-radius:10px;
-                    color:#444;font-size:12px;padding:14px 10px;}
-                QLabel:hover{border-color:#3d3d3d;color:#666;}
-            """)
-            self._chip_row.setStyleSheet(
-                "QWidget{background:#111;border:1.5px solid #1e1e1e;border-radius:10px;}"
-            )
+        self._hint.setProperty("dragging", on)
+        self._chip_row.setProperty("dragging", on)
+        self.apply_theme()
 
     def dragEnterEvent(self, e: QDragEnterEvent):
         if e.mimeData().hasUrls():
@@ -169,38 +149,27 @@ class ImageCard(QFrame):
 
         # 缩略图区
         self.thumb = QLabel()
+        self.thumb.setObjectName("image-thumb")
         self.thumb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumb.setFixedSize(202, 196)
-        self.thumb.setStyleSheet("border-radius:7px;background:#111;")
         v.addWidget(self.thumb)
 
         # 操作按钮行
         br = QHBoxLayout(); br.setContentsMargins(0,0,0,0); br.setSpacing(4)
-        btn_style = """
-            QPushButton{background:#1e1e1e;border:1px solid #2a2a2a;
-                border-radius:5px;color:#888;font-size:12px;}
-            QPushButton:hover{background:#2a2a2a;color:#eee;}
-        """
         for icon, tip, slot in [(self._tr("view"), self._tr("preview"), self._preview),
                                   (self._tr("edit"), self._tr("edit_this"), self._edit),
                                   (self._tr("save"), self._tr("save"), self._save),
                                   (self._tr("open"), self._tr("folder_tip"), self._reveal)]:
-            b = QPushButton(icon); b.setToolTip(tip); b.setFixedSize(44,24)
-            b.setStyleSheet(btn_style)
+            b = QPushButton(icon); b.setObjectName("card-action-btn"); b.setToolTip(tip); b.setFixedSize(44,24)
             b.clicked.connect(slot); br.addWidget(b)
         br.addStretch()
 
         # 红底预览勾选框（放在按钮行右侧）
         self._red_chk = QPushButton(self._tr("red"))
+        self._red_chk.setObjectName("red-bg-btn")
         self._red_chk.setCheckable(True)
         self._red_chk.setFixedSize(40, 24)
         self._red_chk.setToolTip(self._tr("red_tip"))
-        self._red_chk.setStyleSheet("""
-            QPushButton{background:#1e1e1e;border:1px solid #2a2a2a;
-                border-radius:5px;color:#666;font-size:11px;}
-            QPushButton:hover{border-color:#883333;color:#ffaaaa;}
-            QPushButton:checked{background:#2a0a0a;border-color:#cc3333;}
-        """)
         self._red_chk.toggled.connect(self._on_red_toggled)
         br.addWidget(self._red_chk)
         v.addLayout(br)
@@ -223,10 +192,11 @@ class ImageCard(QFrame):
             composite.fill(QColor("#cc2222"))
             p = QPainter(composite); p.drawPixmap(0, 0, scaled); p.end()
             self.thumb.setPixmap(composite)
-            self.thumb.setStyleSheet("border-radius:7px;background:#cc2222;")
+            self.thumb.setProperty("red", True)
         else:
             self.thumb.setPixmap(scaled)
-            self.thumb.setStyleSheet("border-radius:7px;background:#111;")
+            self.thumb.setProperty("red", False)
+        self.thumb.style().unpolish(self.thumb); self.thumb.style().polish(self.thumb)
 
     def _on_red_toggled(self, checked: bool):
         self._render_thumb(checked)

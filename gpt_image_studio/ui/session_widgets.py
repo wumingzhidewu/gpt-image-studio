@@ -20,9 +20,8 @@ class SessionItem(QFrame):
 
         row = QHBoxLayout(self); row.setContentsMargins(10,8,10,8); row.setSpacing(10)
 
-        thumb = QLabel(); thumb.setFixedSize(52,52)
+        thumb = QLabel(); thumb.setObjectName("session-thumb"); thumb.setFixedSize(52,52)
         thumb.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        thumb.setStyleSheet("border-radius:10px;background:#202020;")
         first_img = None
         for t in session.get("turns",[]):
             imgs = t.get("images",[])
@@ -34,7 +33,6 @@ class SessionItem(QFrame):
             thumb.setPixmap(crop_square(QPixmap(str(LOGO_PATH)), 52))
         else:
             thumb.setText("IMG")
-            thumb.setStyleSheet("border-radius:10px;background:#202020;color:#555;font-size:11px;font-weight:bold;")
         row.addWidget(thumb)
 
         col = QVBoxLayout(); col.setSpacing(4); col.setContentsMargins(0,0,0,0)
@@ -42,13 +40,13 @@ class SessionItem(QFrame):
         last_prompt = turns[-1].get("prompt","") if turns else ""
         title = session.get("title") or last_prompt or "新生成"
         tl = QLabel(title)
+        tl.setObjectName("session-title")
         tl.setWordWrap(True)
         tl.setMaximumHeight(34)
-        tl.setStyleSheet("color:#f0f0f0;font-size:12px;font-weight:600;line-height:16px;")
         col.addWidget(tl)
         ts = session.get("updated","")[:16].replace("T"," ")
         ml = QLabel(f"{len(turns)} 张图 · {ts}")
-        ml.setStyleSheet("color:#666;font-size:10px;")
+        ml.setObjectName("session-meta")
         col.addWidget(ml)
         row.addLayout(col, 1)
 

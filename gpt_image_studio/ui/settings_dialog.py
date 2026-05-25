@@ -15,30 +15,12 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self._tr = getattr(parent, "tr", lambda key: I18N["zh"].get(key, key))
         self.cfg = cfg.copy()
+        self.theme = getattr(parent, "theme", cfg.get("theme", "dark"))
         self.setWindowTitle(self._tr("settings_title")); self.setMinimumWidth(480)
-        self.setStyleSheet("""
-            QDialog{background:#181818;}
-            QLabel{color:#bbb;font-size:13px;}
-            QLineEdit{background:#222;border:1px solid #2e2e2e;border-radius:7px;
-                color:#e8e8e8;padding:7px 10px;font-size:13px;}
-            QLineEdit:focus{border-color:#7b2ff7;}
-            QComboBox{background:#222;border:1px solid #2e2e2e;border-radius:7px;
-                color:#e8e8e8;padding:6px 10px;font-size:13px;}
-            QComboBox::drop-down{border:none;width:18px;}
-            QComboBox QAbstractItemView{background:#222;color:#e8e8e8;
-                border:1px solid #333;selection-background-color:#2a2a3a;}
-            QPushButton{background:#222;border:1px solid #2e2e2e;border-radius:7px;
-                color:#bbb;padding:7px 18px;font-size:13px;}
-            QPushButton:hover{background:#2a2a2a;color:#fff;}
-            #save-btn{
-                background:qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #7b2ff7,stop:1 #00b4d8);
-                border:none;color:#fff;font-weight:bold;}
-            #save-btn:hover{
-                background:qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #9040ff,stop:1 #00c8f0);}
-        """)
+        self._apply_theme()
 
         v = QVBoxLayout(self); v.setContentsMargins(24,22,24,20); v.setSpacing(14)
-        t = QLabel(self._tr("settings_title")); t.setStyleSheet("color:#fff;font-size:16px;font-weight:bold;")
+        t = QLabel(self._tr("settings_title")); t.setObjectName("settings-title")
         v.addWidget(t)
 
         form = QFormLayout(); form.setSpacing(10)
@@ -56,7 +38,7 @@ class SettingsDialog(QDialog):
         v.addLayout(form)
 
         hint = QLabel(self._tr("settings_hint"))
-        hint.setStyleSheet("color:#484848;font-size:11px;"); hint.setWordWrap(True)
+        hint.setObjectName("settings-hint"); hint.setWordWrap(True)
         v.addWidget(hint)
 
         self._test_lbl = QLabel(""); self._test_lbl.setWordWrap(True)
@@ -65,16 +47,42 @@ class SettingsDialog(QDialog):
 
         br = QHBoxLayout()
         test_btn = QPushButton(self._tr("test_connection"))
-        test_btn.setStyleSheet("""
-            QPushButton{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:7px;
-                color:#888;padding:7px 14px;font-size:13px;}
-            QPushButton:hover{background:#252525;color:#ccc;border-color:#3a3a3a;}
-        """)
         test_btn.clicked.connect(self._test)
         br.addWidget(test_btn); br.addStretch()
         cancel = QPushButton(self._tr("cancel")); cancel.clicked.connect(self.reject)
         save = QPushButton(self._tr("save")); save.setObjectName("save-btn"); save.clicked.connect(self._save)
         br.addWidget(cancel); br.addWidget(save); v.addLayout(br)
+
+    def _apply_theme(self):
+        dark = self.theme != "light"
+        bg = "#181818" if dark else "#ffffff"
+        fg = "#bbbbbb" if dark else "#334155"
+        title = "#ffffff" if dark else "#111827"
+        field_bg = "#222222" if dark else "#f8fafc"
+        border = "#2e2e2e" if dark else "#dbe2ea"
+        hover = "#2a2a2a" if dark else "#eef2ff"
+        view_bg = "#222222" if dark else "#ffffff"
+        hint = "#666666" if dark else "#64748b"
+        self.setStyleSheet(f"""
+            QDialog{{background:{bg};}}
+            QLabel{{color:{fg};font-size:13px;}}
+            #settings-title{{color:{title};font-size:16px;font-weight:bold;}}
+            #settings-hint{{color:{hint};font-size:11px;}}
+            QLineEdit,QComboBox{{background:{field_bg};border:1px solid {border};border-radius:7px;
+                color:{title};padding:7px 10px;font-size:13px;}}
+            QLineEdit:focus,QComboBox:focus{{border-color:#7c3aed;}}
+            QComboBox::drop-down{{border:none;width:18px;}}
+            QComboBox QAbstractItemView{{background:{view_bg};color:{title};
+                border:1px solid {border};selection-background-color:#ede9fe;}}
+            QPushButton{{background:{field_bg};border:1px solid {border};border-radius:7px;
+                color:{fg};padding:7px 18px;font-size:13px;}}
+            QPushButton:hover{{background:{hover};color:{title};}}
+            #save-btn{{
+                background:qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #7b2ff7,stop:1 #00b4d8);
+                border:none;color:#fff;font-weight:bold;}}
+            #save-btn:hover{{
+                background:qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #9040ff,stop:1 #00c8f0);}}
+        """)
 
     def _test(self):
         key = self.key_edit.text().strip()

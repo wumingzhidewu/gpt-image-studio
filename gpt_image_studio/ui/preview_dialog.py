@@ -20,67 +20,48 @@ class PreviewDialog(QDialog):
         self._orig_pix = None
         self._drag_pos = None
         self._tr = getattr(parent, "tr", lambda key: I18N["zh"].get(key, key))
+        self.theme = getattr(parent, "theme", "dark")
 
         self.setWindowTitle(self._tr("preview_title"))
         self.setModal(True)
         self.resize(1000, 800)
         self.setMinimumSize(600, 500)
-        self.setStyleSheet("QDialog { background:#0a0a0a; }")
+        self._apply_theme()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         # ── 顶部工具栏 ──
-        bar = QWidget(); bar.setFixedHeight(44)
-        bar.setStyleSheet("background:#111; border-bottom:1px solid #1e1e1e;")
+        bar = QWidget(); bar.setObjectName("preview-toolbar"); bar.setFixedHeight(44)
         br = QHBoxLayout(bar); br.setContentsMargins(12, 0, 12, 0); br.setSpacing(8)
 
         self.counter = QLabel()
-        self.counter.setStyleSheet("color:#888; font-size:12px;")
+        self.counter.setObjectName("preview-counter")
         br.addWidget(self.counter)
         br.addStretch()
 
         def tbtn(text, slot, w=32):
-            b = QPushButton(text); b.setFixedSize(w, 28)
-            b.setStyleSheet("""
-                QPushButton{background:#1e1e1e;border:1px solid #2a2a2a;
-                    border-radius:6px;color:#aaa;font-size:12px;}
-                QPushButton:hover{background:#2a2a2a;color:#fff;}
-            """)
+            b = QPushButton(text); b.setObjectName("preview-btn"); b.setFixedSize(w, 28)
             b.clicked.connect(slot); br.addWidget(b)
         tbtn("−", self._zoom_out)
-        self.zoom_label = QPushButton("100%"); self.zoom_label.setFixedSize(48, 28)
-        self.zoom_label.setStyleSheet("""
-            QPushButton{background:#1e1e1e;border:1px solid #2a2a2a;
-                border-radius:6px;color:#aaa;font-size:11px;}
-            QPushButton:hover{background:#2a2a2a;color:#fff;}
-        """)
+        self.zoom_label = QPushButton("100%"); self.zoom_label.setObjectName("preview-btn"); self.zoom_label.setFixedSize(48, 28)
         self.zoom_label.clicked.connect(self._zoom_fit)
         br.addWidget(self.zoom_label)
         tbtn("+", self._zoom_in)
         br.addSpacing(6)
 
-        save_btn = QPushButton(self._tr("save")); save_btn.setFixedHeight(28)
-        save_btn.setStyleSheet("""
-            QPushButton{background:#1e1e1e;border:1px solid #2a2a2a;
-                border-radius:6px;color:#aaa;font-size:12px;padding:0 10px;}
-            QPushButton:hover{background:#2a2a2a;color:#fff;}
-        """)
+        save_btn = QPushButton(self._tr("save")); save_btn.setObjectName("preview-btn"); save_btn.setFixedHeight(28)
         save_btn.clicked.connect(self._save); br.addWidget(save_btn)
 
-        close_btn = QPushButton("✕"); close_btn.setFixedSize(28, 28)
-        close_btn.setStyleSheet("""
-            QPushButton{background:transparent;border:none;color:#666;font-size:14px;}
-            QPushButton:hover{color:#ff4444;}
-        """)
+        close_btn = QPushButton("✕"); close_btn.setObjectName("preview-close-btn"); close_btn.setFixedSize(28, 28)
         close_btn.clicked.connect(self.reject); br.addWidget(close_btn)
         layout.addWidget(bar)
 
         # ── 图片显示区：用 QScrollArea 包 QLabel ──
         self.scroll = QScrollArea()
+        self.scroll.setObjectName("preview-canvas")
         self.scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll.setStyleSheet("QScrollArea{background:#0a0a0a;border:none;}")
         self.scroll.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -92,18 +73,11 @@ class PreviewDialog(QDialog):
         layout.addWidget(self.scroll, 1)
 
         # ── 底部导航 ──
-        nav = QWidget(); nav.setFixedHeight(50)
-        nav.setStyleSheet("background:#111;border-top:1px solid #1e1e1e;")
+        nav = QWidget(); nav.setObjectName("preview-nav"); nav.setFixedHeight(50)
         nr = QHBoxLayout(nav); nr.setContentsMargins(20, 0, 20, 0); nr.setSpacing(12)
         nr.addStretch()
         for txt, slot in [(self._tr("prev"), self._prev), (self._tr("next"), self._next)]:
-            b = QPushButton(txt); b.setFixedHeight(32)
-            b.setStyleSheet("""
-                QPushButton{background:#1e1e1e;border:1px solid #2a2a2a;
-                    border-radius:8px;color:#aaa;font-size:12px;padding:0 16px;}
-                QPushButton:hover{background:#2a2a2a;color:#fff;}
-                QPushButton:disabled{color:#333;}
-            """)
+            b = QPushButton(txt); b.setObjectName("preview-btn"); b.setFixedHeight(32)
             b.clicked.connect(slot); nr.addWidget(b)
         nr.addStretch()
         layout.addWidget(nav)
@@ -117,6 +91,30 @@ class PreviewDialog(QDialog):
         # 滚轮缩放 —— 在 scroll area 上安装事件过滤
         self.scroll.viewport().installEventFilter(self)
         self._load_current()
+
+    def _apply_theme(self):
+        dark = self.theme != "light"
+        bg = "#0a0a0a" if dark else "#f6f8fb"
+        bar_bg = "#111111" if dark else "#ffffff"
+        border = "#1e1e1e" if dark else "#dbe2ea"
+        btn_bg = "#1e1e1e" if dark else "#f8fafc"
+        btn_hover = "#2a2a2a" if dark else "#eef2ff"
+        text = "#aaaaaa" if dark else "#334155"
+        text_hover = "#ffffff" if dark else "#111827"
+        disabled = "#333333" if dark else "#cbd5e1"
+        self.setStyleSheet(f"""
+            QDialog{{background:{bg};}}
+            #preview-toolbar{{background:{bar_bg};border-bottom:1px solid {border};}}
+            #preview-nav{{background:{bar_bg};border-top:1px solid {border};}}
+            #preview-counter{{color:{text};font-size:12px;}}
+            #preview-btn{{background:{btn_bg};border:1px solid {border};
+                border-radius:8px;color:{text};font-size:12px;padding:0 12px;}}
+            #preview-btn:hover{{background:{btn_hover};color:{text_hover};}}
+            #preview-btn:disabled{{color:{disabled};}}
+            #preview-close-btn{{background:transparent;border:none;color:{disabled};font-size:14px;}}
+            #preview-close-btn:hover{{color:#ef4444;}}
+            #preview-canvas{{background:#0a0a0a;border:none;}}
+        """)
 
     def eventFilter(self, obj, event):
         if obj is self.scroll.viewport() and event.type() == event.Type.Wheel:

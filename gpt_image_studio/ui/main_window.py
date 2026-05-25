@@ -2,10 +2,10 @@ import os
 from datetime import datetime
 
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QColor, QIcon, QKeySequence, QPalette, QPixmap
+from PyQt6.QtGui import QIcon, QKeySequence, QPixmap
 from PyQt6.QtWidgets import (
-    QComboBox, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QLabel,
-    QMainWindow, QMessageBox, QProgressBar, QPushButton, QScrollArea,
+    QApplication, QComboBox, QDialog, QFileDialog, QFrame, QGridLayout, QHBoxLayout,
+    QLabel, QMainWindow, QMessageBox, QProgressBar, QPushButton, QScrollArea,
     QSizePolicy, QSpinBox, QSplitter, QStackedWidget, QStatusBar, QTextEdit,
     QVBoxLayout, QWidget,
 )
@@ -20,7 +20,7 @@ from ..models import (
 )
 from ..paths import IMAGES_DIR, LOGO_PATH, SESSIONS_DIR
 from ..sessions import list_sessions, load_session, new_session, save_session
-from ..styles import THEME_STYLES
+from ..styles import THEME_STYLES, apply_app_palette
 from ..templates import TEMPLATES
 from ..workers.generate_thread import GenerateThread
 from .image_widgets import DropZone, TurnWidget
@@ -62,6 +62,9 @@ class MainWindow(QMainWindow):
         return I18N.get(self.lang, I18N["zh"]).get(key, key)
 
     def _apply_theme_stylesheet(self):
+        app = QApplication.instance()
+        if app is not None:
+            apply_app_palette(app, self.theme)
         self.setStyleSheet(THEME_STYLES.get(self.theme, THEME_STYLES["dark"]))
 
     def _theme_button_text(self) -> str:
@@ -74,9 +77,9 @@ class MainWindow(QMainWindow):
         root = QHBoxLayout(central); root.setContentsMargins(0,0,0,0); root.setSpacing(0)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setObjectName("app-splitter")
         splitter.setHandleWidth(5)
         splitter.setChildrenCollapsible(False)
-        splitter.setStyleSheet("QSplitter::handle{background:#202431;} QSplitter::handle:hover{background:#7c3aed;}")
         splitter.addWidget(self._mk_sidebar())
         splitter.addWidget(self._mk_main())
         splitter.setSizes([330, 1050])
@@ -96,7 +99,7 @@ class MainWindow(QMainWindow):
 
         brand = QWidget()
         br = QHBoxLayout(brand); br.setContentsMargins(14,16,14,12); br.setSpacing(10)
-        logo = QLabel(); logo.setFixedSize(44,44); logo.setStyleSheet("border-radius:12px;background:#151923;")
+        logo = QLabel(); logo.setObjectName("logo-box"); logo.setFixedSize(44,44)
         if LOGO_PATH.exists():
             logo.setPixmap(crop_square(QPixmap(str(LOGO_PATH)), 44))
         br.addWidget(logo)
@@ -123,17 +126,16 @@ class MainWindow(QMainWindow):
         self.history_label = QLabel(self.tr("history")); self.history_label.setObjectName("section-title")
         sh.addWidget(self.history_label); sh.addStretch()
         self.clear_btn = QPushButton(self.tr("clear"))
+        self.clear_btn.setObjectName("clear-history-btn")
         clr = self.clear_btn
-        clr.setStyleSheet("QPushButton{background:transparent;border:none;color:#64748b;font-size:11px;} QPushButton:hover{color:#ef4444;}")
         clr.clicked.connect(self._clear_sessions)
         sh.addWidget(clr)
         v.addLayout(sh)
 
-        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll = QScrollArea(); scroll.setObjectName("session-scroll"); scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("QScrollArea{background:#0f1117;border:none;}")
-        self._sess_container = QWidget(); self._sess_container.setStyleSheet("background:#0f1117;")
+        self._sess_container = QWidget(); self._sess_container.setObjectName("session-container")
         self._sess_layout = QVBoxLayout(self._sess_container)
         self._sess_layout.setContentsMargins(0,0,0,0)
         self._sess_layout.setSpacing(4)
@@ -160,10 +162,10 @@ class MainWindow(QMainWindow):
 
         h = QHBoxLayout()
         self.main_title = QLabel(self.tr("main_title"))
-        self.main_title.setStyleSheet("font-size:26px;font-weight:900;color:#f8fafc;")
+        self.main_title.setObjectName("page-title")
         h.addWidget(self.main_title)
         self._session_title_lbl = QLabel(self.tr("new_title"))
-        self._session_title_lbl.setStyleSheet("color:#94a3b8;font-size:12px;background:#111827;border:1px solid #273244;border-radius:12px;padding:5px 12px;")
+        self._session_title_lbl.setObjectName("session-title-pill")
         h.addWidget(self._session_title_lbl)
         h.addStretch()
         self._add_header_actions(h)
@@ -187,20 +189,12 @@ class MainWindow(QMainWindow):
 
         def mk_pill(lbl_text, widget, mw=0):
             pill = QFrame()
-            pill.setStyleSheet("QFrame{background:#0d111a;border:1px solid #273244;border-radius:14px;}")
+            pill.setObjectName("param-pill")
             ph = QHBoxLayout(pill); ph.setContentsMargins(10,0,8,0); ph.setSpacing(6)
             ll = QLabel(lbl_text)
-            ll.setStyleSheet("color:#64748b;font-size:11px;background:transparent;border:none;")
+            ll.setObjectName("param-label")
             ph.addWidget(ll)
-            widget.setStyleSheet("""
-                QComboBox,QSpinBox{background:transparent;border:none;color:#e5e7eb;
-                    font-size:12px;padding:0 2px;min-height:32px;}
-                QComboBox::drop-down{border:none;width:14px;}
-                QComboBox::down-arrow{image:none;border:none;}
-                QComboBox QAbstractItemView{background:#111827;border:1px solid #334155;
-                    color:#e5e7eb;selection-background-color:#312e81;outline:none;padding:4px;}
-                QSpinBox::up-button,QSpinBox::down-button{width:0;border:none;background:transparent;}
-            """)
+            widget.setObjectName("param-control")
             if mw: widget.setMinimumWidth(mw)
             ph.addWidget(widget); pill.setFixedHeight(36)
             return pill
@@ -228,7 +222,7 @@ class MainWindow(QMainWindow):
 
         # 实际 size 预览标签
         self.size_preview = QLabel("1024×1024")
-        self.size_preview.setStyleSheet("color:#555;font-size:10px;min-width:80px;")
+        self.size_preview.setObjectName("size-preview")
 
         self.quality_combo = QComboBox(); self.quality_combo.addItems(QUALITY_OPTIONS)
         self.quality_combo.setCurrentText(self.cfg.get("default_quality", "auto"))
@@ -273,7 +267,7 @@ class MainWindow(QMainWindow):
         th = QHBoxLayout()
         self.templates_page_title = QLabel(self.tr("templates_tab"))
         tt = self.templates_page_title
-        tt.setStyleSheet("font-size:26px;font-weight:900;color:#f8fafc;")
+        tt.setObjectName("page-title")
         th.addWidget(tt); th.addStretch(); self._add_header_actions(th, secondary=True); tv.addLayout(th)
         tv.addWidget(self._mk_templates_area(self.tr("template_library"), self.tr("template_library_hint")), 1)
 
@@ -303,10 +297,10 @@ class MainWindow(QMainWindow):
         v = QVBoxLayout(w); v.setContentsMargins(0,0,0,0); v.setSpacing(10)
         h = QHBoxLayout()
         t = QLabel(title_text)
-        t.setStyleSheet("color:#f8fafc;font-size:15px;font-weight:800;")
+        t.setObjectName("section-heading")
         h.addWidget(t)
         hint = QLabel(hint_text)
-        hint.setStyleSheet("color:#64748b;font-size:11px;")
+        hint.setObjectName("section-hint")
         h.addWidget(hint); h.addStretch(); v.addLayout(h)
         if hasattr(self, "_template_areas"):
             self._template_areas.append((t, hint))
@@ -331,10 +325,10 @@ class MainWindow(QMainWindow):
         v = QVBoxLayout(w); v.setContentsMargins(14,14,14,14); v.setSpacing(10)
         h = QHBoxLayout()
         self.current_title = QLabel(self.tr("current"))
-        self.current_title.setStyleSheet("color:#f8fafc;font-size:15px;font-weight:800;")
+        self.current_title.setObjectName("section-heading")
         h.addWidget(self.current_title)
         self._result_hint = QLabel(self.tr("current_hint"))
-        self._result_hint.setStyleSheet("color:#64748b;font-size:11px;")
+        self._result_hint.setObjectName("section-hint")
         h.addWidget(self._result_hint); h.addStretch(); v.addLayout(h)
 
         self.chat_scroll = QScrollArea()
@@ -490,6 +484,9 @@ class MainWindow(QMainWindow):
         self.cfg["theme"] = self.theme
         save_config(self.cfg)
         self._apply_theme_stylesheet()
+        self.drop_zone.apply_theme()
+        self._rebuild_chat_area()
+        self._load_sessions_list()
         self._refresh_theme_buttons()
 
     def _refresh_theme_buttons(self):
@@ -683,6 +680,22 @@ class MainWindow(QMainWindow):
         while self._chat_layout.count() > 1:
             item = self._chat_layout.takeAt(0)
             if item.widget(): item.widget().deleteLater()
+
+    def _rebuild_chat_area(self):
+        if not hasattr(self, "_chat_layout"):
+            return
+        self._clear_chat_area()
+        all_paths = []
+        for turn in self._session.get("turns", []):
+            all_paths.extend(p for p in turn.get("images", []) if os.path.exists(p))
+        offset = 0
+        for turn in self._session.get("turns", []):
+            imgs = [p for p in turn.get("images", []) if os.path.exists(p)]
+            tw = TurnWidget(turn, all_paths, offset, self)
+            tw.preview_requested.connect(self._open_preview)
+            tw.edit_requested.connect(self._start_edit)
+            self._chat_layout.insertWidget(self._chat_layout.count()-1, tw)
+            offset += len(imgs)
 
     def _load_sessions_list(self):
         while self._sess_layout.count() > 1:
