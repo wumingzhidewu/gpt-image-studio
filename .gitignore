@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+.venv/
+venv/
+env/
+.env
+.env.*
+
+build/
+dist/
+*.egg-info/
+
+.claude/settings.local.json
+.gpt_image_studio/
+
+# Internal/private docs
+/docs/
+
+# Local generated artifacts
+alpha_test_results.csv
+resolution_test_results.csv
+test_results.csv
+*.log
