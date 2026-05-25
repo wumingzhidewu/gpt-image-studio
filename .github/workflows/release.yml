@@ -1,4 +1,4 @@
-name: Build Windows Installer
+name: Build Windows Executable
 
 on:
   push:
@@ -50,19 +50,16 @@ jobs:
             throw "Package version $packageVersion does not match tag version ${{ steps.version.outputs.version }}"
           }
 
-      - name: Build PyInstaller app
+      - name: Build PyInstaller executable
         run: pyinstaller --clean --noconfirm GPT-Image-Studio.spec
 
-      - name: Install Inno Setup
-        run: choco install innosetup --no-progress -y
-
-      - name: Build installer
+      - name: Rename release executable
         shell: pwsh
         run: |
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ steps.version.outputs.version }}" "installer\GPT-Image-Studio.iss"
+          Move-Item "dist\GPT-Image-Studio.exe" "dist\GPT-Image-Studio-${{ steps.version.outputs.version }}.exe" -Force
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/installer/GPT-Image-Studio-Setup-${{ steps.version.outputs.version }}.exe
+          files: dist/GPT-Image-Studio-${{ steps.version.outputs.version }}.exe
           generate_release_notes: true

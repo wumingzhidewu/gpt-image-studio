@@ -28,15 +28,15 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-## Download Windows Installer
+## Download Windows executable
 
-For tagged releases, download the Windows installer from GitHub Releases:
+For tagged releases, download the standalone Windows executable from GitHub Releases:
 
 ```text
-GPT-Image-Studio-Setup-<version>.exe
+GPT-Image-Studio-<version>.exe
 ```
 
-The installer sets up the app under Program Files and creates Start Menu shortcuts.
+Double-click the file to launch the app. No installer is required.
 
 ## Run from source
 
@@ -121,9 +121,9 @@ python -m compileall -q main.py gpt_image_studio tests
 python tests/test_param_mapping.py
 ```
 
-## Build Windows installer locally
+## Build Windows executable locally
 
-On Windows, install dependencies and build the one-folder executable:
+On Windows, install dependencies and build the standalone executable:
 
 ```powershell
 python -m pip install --upgrade pip
@@ -134,16 +134,10 @@ python tests/test_param_mapping.py
 pyinstaller --clean --noconfirm GPT-Image-Studio.spec
 ```
 
-If Inno Setup 6 is installed, build the installer:
-
-```powershell
-& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=0.1.0" "installer\GPT-Image-Studio.iss"
-```
-
-The installer is written to:
+The executable is written to:
 
 ```text
-dist/installer/GPT-Image-Studio-Setup-0.1.0.exe
+dist/GPT-Image-Studio.exe
 ```
 
 ## Release process
@@ -155,7 +149,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Tag pushes matching `v*` trigger the GitHub Actions workflow. The workflow runs source checks, builds the Windows app with PyInstaller, packages it with Inno Setup, creates a GitHub Release, and uploads the installer.
+Tag pushes matching `v*` trigger the GitHub Actions workflow. The workflow runs source checks, builds the standalone Windows executable with PyInstaller, creates a GitHub Release, and uploads the `.exe` file.
 
 ## Proxy Notes
 
@@ -179,15 +173,15 @@ If you use an OpenAI-compatible proxy, behavior may differ from the official API
 - 支持中文 / English 切换
 - 配置、图片和历史记录都保存在本地
 
-## 下载 Windows 安装包
+## 下载 Windows 免安装版
 
-每个正式版本会在 GitHub Releases 中提供 Windows 安装包：
+每个正式版本会在 GitHub Releases 中提供 Windows 免安装 exe：
 
 ```text
-GPT-Image-Studio-Setup-<version>.exe
+GPT-Image-Studio-<version>.exe
 ```
 
-下载后双击安装，会安装到 Program Files 并创建开始菜单快捷方式。
+下载后双击即可启动，不需要安装。
 
 ## 安装源码依赖
 
@@ -241,7 +235,7 @@ python -m compileall -q main.py gpt_image_studio tests
 python tests/test_param_mapping.py
 ```
 
-## 本地构建 Windows 安装包
+## 本地构建 Windows 免安装 exe
 
 在 Windows 上执行：
 
@@ -254,16 +248,10 @@ python tests/test_param_mapping.py
 pyinstaller --clean --noconfirm GPT-Image-Studio.spec
 ```
 
-如果本机安装了 Inno Setup 6，可以继续打包安装程序：
-
-```powershell
-& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=0.1.0" "installer\GPT-Image-Studio.iss"
-```
-
-安装包输出位置：
+exe 输出位置：
 
 ```text
-dist/installer/GPT-Image-Studio-Setup-0.1.0.exe
+dist/GPT-Image-Studio.exe
 ```
 
 ## 发布流程
@@ -275,7 +263,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-匹配 `v*` 的标签会触发 Windows 构建流程：运行源码检查，使用 PyInstaller 构建应用，使用 Inno Setup 生成安装包，并把安装包上传到 GitHub Release。
+匹配 `v*` 的标签会触发 Windows 构建流程：运行源码检查，使用 PyInstaller 构建免安装 exe，并把 `.exe` 文件上传到 GitHub Release。
 
 ## 代理说明
 
