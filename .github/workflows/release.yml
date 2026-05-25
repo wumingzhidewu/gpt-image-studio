@@ -50,6 +50,9 @@ jobs:
             throw "Package version $packageVersion does not match tag version ${{ steps.version.outputs.version }}"
           }
 
+      - name: Install UPX
+        run: choco install upx --no-progress -y
+
       - name: Build PyInstaller executable
         run: pyinstaller --clean --noconfirm GPT-Image-Studio.spec
 
