@@ -45,7 +45,14 @@ class SessionItem(QFrame):
         tl.setMaximumHeight(34)
         col.addWidget(tl)
         ts = session.get("updated","")[:16].replace("T"," ")
-        ml = QLabel(f"{len(turns)} 张图 · {ts}")
+        if session.get("mode") == "xiaohongshu_graphic_text":
+            pages = session.get("xhs", {}).get("pages", [])
+            done_pages = len([p for p in pages if p.get("final_image") or p.get("raw_image")])
+            meta = f"小红书图文 · {done_pages}/{len(pages)} 页 · {ts}"
+        else:
+            image_count = sum(len(t.get("images", [])) for t in turns)
+            meta = f"{image_count} 张图 · {ts}"
+        ml = QLabel(meta)
         ml.setObjectName("session-meta")
         col.addWidget(ml)
         row.addLayout(col, 1)

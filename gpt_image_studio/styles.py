@@ -61,6 +61,18 @@ QLineEdit:focus, QComboBox:focus, QSpinBox:focus { border-color:#7c3aed; }
 #session-meta { font-size:10px; }
 #turn-prompt { font-size:13px; }
 #turn-meta { font-size:11px; }
+#xhs-step-card, #xhs-page-card { border-radius:18px; }
+#xhs-field-label { font-size:11px; font-weight:700; }
+#xhs-page-status { font-size:11px; font-weight:800; border-radius:10px; padding:4px 10px; }
+#xhs-primary-btn, #xhs-secondary-btn { border-radius:12px; font-size:12px; font-weight:800; padding:8px 14px; }
+#xhs-primary-btn:disabled, #xhs-secondary-btn:disabled { background:#475569; color:#cbd5e1; }
+QPushButton#xhs-generate-btn { background:#ff3b5c; border:none; border-radius:14px; color:#ffffff; font-size:13px; font-weight:900; padding:10px 26px; min-width:150px; }
+QPushButton#xhs-generate-btn:hover { background:#ff5470; }
+QPushButton#xhs-generate-btn:disabled { background:#ff3b5c; color:#ffffff; border:none; }
+#xhs-template-btn, #xhs-template-btn-active { border-radius:14px; text-align:left; }
+#xhs-template-card { border-radius:14px; }
+#xhs-template-preview { border-radius:10px; }
+#xhs-category-chip, #xhs-category-chip-active { border-radius:12px; font-size:11px; font-weight:800; padding:6px 10px; }
 #preview-canvas { background:#0a0a0a; border:none; }
 """
 
@@ -88,7 +100,23 @@ QMainWindow, QWidget { background-color:#0b0d12; color:#e8e8e8; }
     color:#9ca3af; font-size:12px; padding:8px 12px; margin:3px 10px; text-align:left;
 }
 #sidebar-footer-btn:hover { background:#1b2130; color:#f3f4f6; border-color:#334155; }
-#prompt-card, #result-card, #turn-frame { background:#121722; border:1px solid #293144; border-radius:18px; }
+#prompt-card, #result-card, #turn-frame, #xhs-step-card { background:#121722; border:1px solid #293144; border-radius:18px; }
+#xhs-page-card { background:#111827; border:1px solid #273244; border-radius:16px; }
+#xhs-field-label { color:#94a3b8; }
+#xhs-page-status { background:#24143f; color:#c4b5fd; }
+#xhs-primary-btn { background:#7c3aed; border:none; color:#ffffff; }
+#xhs-primary-btn:hover { background:#8b5cf6; }
+#xhs-secondary-btn { background:#151923; border:1px solid #252b3a; color:#cbd5e1; }
+#xhs-secondary-btn:hover { background:#1b2130; border-color:#7c3aed; color:#f8fafc; }
+#xhs-template-btn { background:#151923; border:1px solid #252b3a; color:#cbd5e1; }
+#xhs-template-btn:hover { background:#1b2130; border-color:#475569; }
+#xhs-template-btn-active { background:#24143f; border:1px solid #7c3aed; color:#f8fafc; }
+#xhs-template-card { background:#111827; border:1px solid #273244; }
+#xhs-template-card:hover { background:#151c2b; border-color:#ff3b5c; }
+#xhs-template-preview { background:#0d111a; }
+#xhs-category-chip { background:#151923; border:1px solid #252b3a; color:#cbd5e1; }
+#xhs-category-chip:hover { background:#1b2130; border-color:#ff3b5c; color:#ffffff; }
+#xhs-category-chip-active { background:#3b1020; border:1px solid #ff3b5c; color:#ffffff; }
 QTextEdit#prompt-input {
     background:#0d111a; border:1px solid #252b3a; border-radius:14px; color:#f8fafc;
     font-size:14px; padding:10px 12px; selection-background-color:#4c1d95;
@@ -161,7 +189,23 @@ QMainWindow, QWidget { background-color:#f6f8fb; color:#111827; }
     color:#475569; font-size:12px; padding:8px 12px; margin:3px 10px; text-align:left;
 }
 #sidebar-footer-btn:hover { background:#eef2ff; color:#111827; border-color:#c7d2fe; }
-#prompt-card, #result-card, #turn-frame { background:#ffffff; border:1px solid #dbe2ea; border-radius:18px; }
+#prompt-card, #result-card, #turn-frame, #xhs-step-card { background:#ffffff; border:1px solid #dbe2ea; border-radius:18px; }
+#xhs-page-card { background:#ffffff; border:1px solid #dbe2ea; border-radius:16px; }
+#xhs-field-label { color:#64748b; }
+#xhs-page-status { background:#ede9fe; color:#5b21b6; }
+#xhs-primary-btn { background:#7c3aed; border:none; color:#ffffff; }
+#xhs-primary-btn:hover { background:#8b5cf6; }
+#xhs-secondary-btn { background:#ffffff; border:1px solid #dbe2ea; color:#475569; }
+#xhs-secondary-btn:hover { background:#eef2ff; border-color:#7c3aed; color:#312e81; }
+#xhs-template-btn { background:#ffffff; border:1px solid #dbe2ea; color:#475569; }
+#xhs-template-btn:hover { background:#f8fafc; border-color:#c7d2fe; }
+#xhs-template-btn-active { background:#ede9fe; border:1px solid #7c3aed; color:#312e81; }
+#xhs-template-card { background:#ffffff; border:1px solid #dbe2ea; }
+#xhs-template-card:hover { background:#fff7f8; border-color:#ff3b5c; }
+#xhs-template-preview { background:#f1f5f9; }
+#xhs-category-chip { background:#ffffff; border:1px solid #dbe2ea; color:#be123c; }
+#xhs-category-chip:hover { background:#fff7f8; border-color:#ff3b5c; color:#9f1239; }
+#xhs-category-chip-active { background:#ff3b5c; border:1px solid #ff3b5c; color:#ffffff; }
 QTextEdit#prompt-input {
     background:#f8fafc; border:1px solid #dbe2ea; border-radius:14px; color:#111827;
     font-size:14px; padding:10px 12px; selection-background-color:#ddd6fe;

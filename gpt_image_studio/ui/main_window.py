@@ -21,13 +21,14 @@ from ..models import (
 from ..paths import IMAGES_DIR, LOGO_PATH, SESSIONS_DIR
 from ..sessions import list_sessions, load_session, new_session, save_session
 from ..styles import THEME_STYLES, apply_app_palette
-from ..templates import TEMPLATES
+from ..templates import TEMPLATE_CATEGORIES, TEMPLATES
 from ..workers.generate_thread import GenerateThread
 from .image_widgets import DropZone, TurnWidget
 from .preview_dialog import PreviewDialog
 from .session_widgets import SessionItem
 from .settings_dialog import SettingsDialog
 from .template_widgets import TemplateCard
+from .xiaohongshu_page import XiaohongshuPage
 
 
 class MainWindow(QMainWindow):
@@ -115,33 +116,19 @@ class MainWindow(QMainWindow):
         v.addWidget(self.new_btn)
 
         self._page_tabs = {}
-        for label, key in [(self.tr("generate_tab"), "generate"), (self.tr("templates_tab"), "templates")]:
+        for label, key in [
+            (self.tr("generate_tab"), "generate"),
+            (self.tr("xiaohongshu_tab"), "xiaohongshu"),
+            (self.tr("templates_tab"), "templates"),
+            (self.tr("history"), "history"),
+        ]:
             btn = QPushButton(label)
             btn.setObjectName("sidebar-tab-active" if key == "generate" else "sidebar-tab")
             btn.clicked.connect(lambda _, k=key: self._switch_page(k))
             v.addWidget(btn)
             self._page_tabs[key] = btn
 
-        sh = QHBoxLayout(); sh.setContentsMargins(16,12,12,6)
-        self.history_label = QLabel(self.tr("history")); self.history_label.setObjectName("section-title")
-        sh.addWidget(self.history_label); sh.addStretch()
-        self.clear_btn = QPushButton(self.tr("clear"))
-        self.clear_btn.setObjectName("clear-history-btn")
-        clr = self.clear_btn
-        clr.clicked.connect(self._clear_sessions)
-        sh.addWidget(clr)
-        v.addLayout(sh)
-
-        scroll = QScrollArea(); scroll.setObjectName("session-scroll"); scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._sess_container = QWidget(); self._sess_container.setObjectName("session-container")
-        self._sess_layout = QVBoxLayout(self._sess_container)
-        self._sess_layout.setContentsMargins(0,0,0,0)
-        self._sess_layout.setSpacing(4)
-        self._sess_layout.addStretch()
-        scroll.setWidget(self._sess_container)
-        v.addWidget(scroll, 1)
+        v.addStretch()
 
         self.settings_btn = QPushButton(self.tr("settings")); self.settings_btn.setObjectName("sidebar-footer-btn")
         self.settings_btn.clicked.connect(self._open_settings); v.addWidget(self.settings_btn)
@@ -262,6 +249,12 @@ class MainWindow(QMainWindow):
 
         v.addWidget(self.gen_content_stack, 1)
 
+        self.xiaohongshu_page = XiaohongshuPage(
+            self,
+            on_sessions_changed=self._load_sessions_list,
+            on_preview=self._open_preview,
+        )
+
         self.templates_page = QWidget()
         tv = QVBoxLayout(self.templates_page); tv.setContentsMargins(26,22,26,16); tv.setSpacing(16)
         th = QHBoxLayout()
@@ -271,8 +264,12 @@ class MainWindow(QMainWindow):
         th.addWidget(tt); th.addStretch(); self._add_header_actions(th, secondary=True); tv.addLayout(th)
         tv.addWidget(self._mk_templates_area(self.tr("template_library"), self.tr("template_library_hint")), 1)
 
+        self.history_page = self._mk_history_page()
+
         self.page_stack.addWidget(self.generate_page)
+        self.page_stack.addWidget(self.xiaohongshu_page)
         self.page_stack.addWidget(self.templates_page)
+        self.page_stack.addWidget(self.history_page)
         self.page_stack.setCurrentWidget(self.generate_page)
         return root
 
@@ -292,6 +289,33 @@ class MainWindow(QMainWindow):
             self.templates_lang_btn = lang_btn
             self.templates_theme_btn = theme_btn
 
+    def _mk_history_page(self):
+        w = QWidget()
+        v = QVBoxLayout(w); v.setContentsMargins(26,22,26,16); v.setSpacing(16)
+        h = QHBoxLayout()
+        self.history_label = QLabel(self.tr("history")); self.history_label.setObjectName("page-title")
+        h.addWidget(self.history_label); h.addStretch()
+        self.clear_btn = QPushButton(self.tr("clear"))
+        self.clear_btn.setObjectName("clear-history-btn")
+        self.clear_btn.clicked.connect(self._clear_sessions)
+        h.addWidget(self.clear_btn)
+        v.addLayout(h)
+
+        card = QFrame(); card.setObjectName("result-card")
+        cv = QVBoxLayout(card); cv.setContentsMargins(12,12,12,12); cv.setSpacing(8)
+        scroll = QScrollArea(); scroll.setObjectName("session-scroll"); scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._sess_container = QWidget(); self._sess_container.setObjectName("session-container")
+        self._sess_layout = QVBoxLayout(self._sess_container)
+        self._sess_layout.setContentsMargins(0,0,0,0)
+        self._sess_layout.setSpacing(4)
+        self._sess_layout.addStretch()
+        scroll.setWidget(self._sess_container)
+        cv.addWidget(scroll, 1)
+        v.addWidget(card, 1)
+        return w
+
     def _mk_templates_area(self, title_text="灵感模板", hint_text="点击模板会填入提示词"):
         w = QWidget()
         v = QVBoxLayout(w); v.setContentsMargins(0,0,0,0); v.setSpacing(10)
@@ -310,12 +334,31 @@ class MainWindow(QMainWindow):
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setStyleSheet("QScrollArea{background:transparent;border:none;}")
         body = QWidget(); body.setStyleSheet("background:transparent;")
-        grid = QGridLayout(body); grid.setContentsMargins(0,0,0,0); grid.setSpacing(12)
-        for i, template in enumerate(TEMPLATES):
-            card = TemplateCard(template)
-            card.selected.connect(self._apply_template)
-            grid.addWidget(card, i // 3, i % 3)
-        grid.setRowStretch((len(TEMPLATES) + 2) // 3, 1)
+        sections = QVBoxLayout(body); sections.setContentsMargins(0,0,0,0); sections.setSpacing(18)
+
+        templates_by_category = {}
+        for template in TEMPLATES:
+            templates_by_category.setdefault(template.get("category", "其他 / Other"), []).append(template)
+
+        ordered_categories = [category for category in TEMPLATE_CATEGORIES if category in templates_by_category]
+        ordered_categories.extend(category for category in templates_by_category if category not in ordered_categories)
+
+        for category in ordered_categories:
+            category_label = QLabel(category)
+            category_label.setObjectName("section-heading")
+            sections.addWidget(category_label)
+
+            grid_host = QWidget(); grid_host.setStyleSheet("background:transparent;")
+            grid = QGridLayout(grid_host); grid.setContentsMargins(0,0,0,0); grid.setSpacing(12)
+            for i, template in enumerate(templates_by_category[category]):
+                card = TemplateCard(template)
+                card.selected.connect(self._apply_template)
+                card.activated.connect(self._activate_template)
+                grid.addWidget(card, i // 3, i % 3)
+            grid.setRowStretch((len(templates_by_category[category]) + 2) // 3, 1)
+            sections.addWidget(grid_host)
+
+        sections.addStretch()
         scroll.setWidget(body)
         v.addWidget(scroll, 1)
         return w
@@ -360,7 +403,13 @@ class MainWindow(QMainWindow):
     def _switch_page(self, key: str):
         if not hasattr(self, "page_stack"):
             return
-        target = self.templates_page if key == "templates" else self.generate_page
+        pages = {
+            "generate": self.generate_page,
+            "xiaohongshu": self.xiaohongshu_page,
+            "templates": self.templates_page,
+            "history": self.history_page,
+        }
+        target = pages.get(key, self.generate_page)
         self.page_stack.setCurrentWidget(target)
         for tab_key, btn in self._page_tabs.items():
             btn.setObjectName("sidebar-tab-active" if tab_key == key else "sidebar-tab")
@@ -446,6 +495,11 @@ class MainWindow(QMainWindow):
         self.prompt_input.setFocus()
         self.status_bar.showMessage("已填入模板提示词" if self.lang == "zh" else "Template prompt applied", 2500)
 
+    def _activate_template(self, prompt: str):
+        self._apply_template(prompt)
+        self._switch_page("generate")
+        self.gen_content_stack.setCurrentWidget(self.gen_templates_view)
+
     def _show_results_page(self):
         self._switch_page("generate")
         if hasattr(self, "gen_content_stack"):
@@ -498,7 +552,9 @@ class MainWindow(QMainWindow):
     def _refresh_language(self):
         self.new_btn.setText(self.tr("new"))
         self._page_tabs["generate"].setText(self.tr("generate_tab"))
+        self._page_tabs["xiaohongshu"].setText(self.tr("xiaohongshu_tab"))
         self._page_tabs["templates"].setText(self.tr("templates_tab"))
+        self._page_tabs["history"].setText(self.tr("history"))
         self.history_label.setText(self.tr("history"))
         self.clear_btn.setText(self.tr("clear"))
         self.settings_btn.setText(self.tr("settings"))
@@ -715,6 +771,13 @@ class MainWindow(QMainWindow):
         self._session = data
         self._session_title_lbl.setText(data.get("title", self.tr("new_title")))
         self._clear_chat_area()
+
+        if data.get("mode") == "xiaohongshu_graphic_text":
+            self.xiaohongshu_page.load_session(data)
+            self._switch_page("xiaohongshu")
+            self._load_sessions_list()
+            return
+
         self._show_results_page()
 
         # 重建对话气泡

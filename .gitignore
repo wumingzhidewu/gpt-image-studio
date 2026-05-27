@@ -22,4 +22,5 @@ dist/
 alpha_test_results.csv
 resolution_test_results.csv
 test_results.csv
+wechat_article_assets/
 *.log

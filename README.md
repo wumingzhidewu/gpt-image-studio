@@ -1,76 +1,107 @@
-# GPT-Image Studio
+<div align="center">
+  <img src="assets/app_logo.png" width="120" alt="GPT-Image Studio Logo" />
+  <h1>GPT-Image Studio</h1>
+  <p><strong>本地 GPT-Image-2 图像生成、编辑与小红书图文工作台</strong></p>
+  <p>
+    <a href="README.md">简体中文</a> | <a href="README_EN.md">English</a>
+  </p>
+</div>
 
-A local desktop workspace for generating and editing images with GPT-Image models. It provides a polished PyQt6 interface, reusable inspiration templates, generation history, and OpenAI-compatible proxy configuration.
+---
 
-## Features
+GPT-Image Studio 是一个本地桌面端图像生成工具，用来调用 GPT-Image 系列模型生成、编辑和管理图片。
 
-- GPT-Image generation with `gpt-image-2`, `gpt-image-1.5`, and `gpt-image-1`
-- Default options: `gpt-image-2`, `2K`, `png`
-- Explicit size mapping from aspect ratio + resolution, so selected UI options match API payloads
-- Image edit workflow using a selected reference image
-- Left sidebar history with resizable layout
-- Separate Generate and Templates pages
-- Built-in inspiration template gallery with local thumbnails
-- Chinese / English UI toggle
-- Local config and image storage under `~/.gpt_image_studio/`
+它的目标不是做一个复杂的在线平台，而是把日常生图里最常用的几件事放到一个本地工作台里：写提示词、选模型参数、上传参考图、保存历史、复用模板，以及一键生成小红书图文海报。
 
-## Requirements
+## 功能特性
 
-- Python 3.10+
-- PyQt6
-- OpenAI Python SDK
-- Pillow
-- requests
+- 支持 `gpt-image-2`、`gpt-image-1.5`、`gpt-image-1`
+- 默认使用 `gpt-image-2`、`2K`、`png`
+- 根据「画面比例 + 分辨率」明确计算 API `size`，避免界面选择和实际请求不一致
+- 支持普通图像生成和参考图编辑模式
+- 支持上传参考图继续编辑已有图片
+- 独立的灵感模板页，内置多种提示词模板和本地预览图
+- 独立的小红书图文页，按分类选择模板，一步生成图文海报
+- 独立的历史生成页，生成记录和图片保存在本地
+- 支持深色 / 浅色主题切换
+- 支持中文 / English 界面切换
+- 支持 OpenAI 官方接口或 OpenAI 兼容代理
+- Windows 可打包为免安装 `.exe`
 
-Install dependencies:
+## 小红书图文模式
 
-```bash
-pip install -r requirements.txt
-```
+小红书图文不是普通配图，而是完整的图文海报提示词模板。
 
-## Download Windows executable
+当前内置 6 个分类，每个分类 3 个模板：
 
-For tagged releases, download the standalone Windows executable from GitHub Releases:
+- 健康养生
+- 家居生活
+- 美食饮品
+- 美妆护肤
+- 穿搭时尚
+- 本地生活
+
+使用流程：
+
+1. 打开左侧 **小红书图文**
+2. 选择分类
+3. 选择一个模板
+4. 按需要修改提示词
+5. 点击生成，得到一张 3:4 竖版图文海报
+
+模板提示词包含标题、副标题、三条内容、底部提醒、画面背景和排版要求，目标是直接生成可发布风格的图文海报，而不是编辑器截图或空白信息卡。
+
+## 下载 Windows 免安装版
+
+正式版本会在 GitHub Releases 中提供 Windows 免安装文件：
 
 ```text
 GPT-Image-Studio-<version>.exe
 ```
 
-Double-click the file to launch the app. No installer is required.
+下载后双击即可启动，不需要安装。
 
-## Run from source
+## 从源码运行
+
+### 1. 安装依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. 启动应用
 
 ```bash
 python main.py
 ```
 
-Package mode is also supported:
+也支持包模式启动：
 
 ```bash
 python -m gpt_image_studio
 ```
 
-On Windows, you can also double-click:
+Windows 下也可以双击：
 
 ```bat
 run.bat
 ```
 
-## Configuration
+## 配置 API
 
-On first launch, open **API Settings** and configure:
+首次启动后，点击左下角 **API 设置**，填写：
 
-- `API Key`: your OpenAI API key or proxy token
-- `Base URL`: OpenAI-compatible endpoint, for example `https://api.openai.com/v1` or a local proxy URL
-- `Default model`: default generation model
+- `API Key`：OpenAI API Key 或兼容代理 Token
+- `Base URL`：OpenAI 兼容接口地址，例如 `https://api.openai.com/v1` 或你的代理地址
+- `默认模型`：默认使用的图像生成模型
 
-The app stores local configuration at:
+配置文件保存在本地：
 
 ```text
 ~/.gpt_image_studio/config.json
 ```
 
-Example:
+示例：
 
 ```json
 {
@@ -85,153 +116,50 @@ Example:
 }
 ```
 
-Generated images and sessions are saved locally under:
+生成图片和历史记录保存在：
 
 ```text
 ~/.gpt_image_studio/images/
 ~/.gpt_image_studio/sessions/
 ```
 
-## Project Structure
+## 典型使用场景
+
+- 给公众号、博客、产品文档生成配图
+- 给开源项目生成 logo、封面图、宣传图
+- 使用 GPT-Image-2 批量测试不同提示词风格
+- 基于参考图继续编辑图片
+- 快速生成小红书封面或图文海报
+- 管理本地生成历史，方便回看和继续编辑
+
+## 项目结构
 
 ```text
 .
-├── main.py                  # Thin compatibility launcher
-├── gpt_image_studio/        # Application package
-│   ├── app.py               # QApplication bootstrap
-│   ├── models.py            # GPT-Image options and size mapping
-│   ├── config.py            # Local config persistence
-│   ├── sessions.py          # Local generation history
-│   ├── workers/             # Background API workers
-│   └── ui/                  # PyQt6 windows, dialogs, and widgets
-├── assets/                  # App logo and template thumbnails
+├── main.py                  # 启动入口
+├── gpt_image_studio/        # 应用主包
+│   ├── app.py               # QApplication 启动逻辑
+│   ├── models.py            # 模型、比例、分辨率和 size 映射
+│   ├── config.py            # 本地配置读写
+│   ├── sessions.py          # 本地历史记录
+│   ├── templates.py         # 灵感模板和小红书模板
+│   ├── workers/             # 后台 API 调用线程
+│   └── ui/                  # PyQt6 界面组件
+├── assets/                  # 应用图标和模板预览图
 │   └── templates/
-├── docs/                    # Articles, diagrams, and research notes
-├── scripts/                 # Development and research helper scripts
-├── tests/                   # Lightweight parameter mapping tests
+├── docs/                    # 文档和文章
+├── scripts/                 # 开发辅助脚本
+├── tests/                   # 轻量测试
 ├── requirements.txt
+├── requirements-build.txt
 ├── run.bat
 └── README.md
-```
-
-## Test
-
-```bash
-python -m compileall -q main.py gpt_image_studio tests
-python tests/test_param_mapping.py
-```
-
-## Build Windows executable locally
-
-On Windows, install dependencies and build the standalone executable:
-
-```powershell
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -r requirements-build.txt
-python -m compileall -q main.py gpt_image_studio tests
-python tests/test_param_mapping.py
-pyinstaller --clean --noconfirm GPT-Image-Studio.spec
-```
-
-The executable is written to:
-
-```text
-dist/GPT-Image-Studio.exe
-```
-
-## Release process
-
-Maintainers can publish a release by pushing a version tag:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Tag pushes matching `v*` trigger the GitHub Actions workflow. The workflow runs source checks, builds the standalone Windows executable with PyInstaller, creates a GitHub Release, and uploads the `.exe` file.
-
-## Proxy Notes
-
-If you use an OpenAI-compatible proxy, behavior may differ from the official API. Some proxies cap `n` to 1, reject transparent background requests, or only support a subset of sizes. The app logs both UI parameters and final API request parameters to help verify what is actually sent.
-
----
-
-# GPT-Image Studio（中文）
-
-一个本地 GPT-Image 桌面工作台，用于生成、编辑和管理图片。应用基于 PyQt6，支持灵感模板、左侧历史记录、可调整侧边栏、图像编辑模式，以及 OpenAI 兼容代理配置。
-
-## 功能
-
-- 支持 `gpt-image-2`、`gpt-image-1.5`、`gpt-image-1`
-- 默认选项：`gpt-image-2`、`2K`、`png`
-- 根据「比例 + 分辨率」计算明确的 `size`，确保界面选择和实际 API 请求一致
-- 选择参考图后进入图片编辑工作流
-- 左侧历史记录与可拖动布局
-- `图像生成` 和 `灵感模板` 是两个独立页面
-- 内置灵感模板图库和本地缩略图
-- 支持中文 / English 切换
-- 配置、图片和历史记录都保存在本地
-
-## 下载 Windows 免安装版
-
-每个正式版本会在 GitHub Releases 中提供 Windows 免安装 exe：
-
-```text
-GPT-Image-Studio-<version>.exe
-```
-
-下载后双击即可启动，不需要安装。
-
-## 安装源码依赖
-
-```bash
-pip install -r requirements.txt
-```
-
-## 从源码启动
-
-```bash
-python main.py
-```
-
-也支持包模式启动：
-
-```bash
-python -m gpt_image_studio
-```
-
-Windows 也可以双击：
-
-```bat
-run.bat
-```
-
-## 配置
-
-首次启动后，在 **API 设置** 中填写：
-
-- `API Key`：OpenAI API Key 或代理 Token
-- `Base URL`：OpenAI 兼容接口地址，例如 `https://api.openai.com/v1` 或本地代理地址
-- `默认模型`：默认使用的生成模型
-
-配置文件位置：
-
-```text
-~/.gpt_image_studio/config.json
-```
-
-生成图片与历史记录位置：
-
-```text
-~/.gpt_image_studio/images/
-~/.gpt_image_studio/sessions/
 ```
 
 ## 自测
 
 ```bash
-python -m compileall -q main.py gpt_image_studio tests
+python -m compileall -q main.py gpt_image_studio tests scripts
 python tests/test_param_mapping.py
 ```
 
@@ -243,12 +171,12 @@ python tests/test_param_mapping.py
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 pip install -r requirements-build.txt
-python -m compileall -q main.py gpt_image_studio tests
+python -m compileall -q main.py gpt_image_studio tests scripts
 python tests/test_param_mapping.py
 pyinstaller --clean --noconfirm GPT-Image-Studio.spec
 ```
 
-exe 输出位置：
+生成文件位置：
 
 ```text
 dist/GPT-Image-Studio.exe
@@ -256,15 +184,22 @@ dist/GPT-Image-Studio.exe
 
 ## 发布流程
 
-维护者推送版本标签即可触发 GitHub Actions 自动打包并发布：
+维护者推送版本标签即可触发 GitHub Actions 自动构建和发布：
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-匹配 `v*` 的标签会触发 Windows 构建流程：运行源码检查，使用 PyInstaller 构建免安装 exe，并把 `.exe` 文件上传到 GitHub Release。
+匹配 `v*` 的标签会触发 Windows 构建流程：运行源码检查，使用 PyInstaller 构建免安装 exe，并把 `.exe` 上传到 GitHub Release。
 
 ## 代理说明
 
-如果使用 OpenAI 兼容代理，代理行为可能和官方 API 不完全一致。例如 `n` 可能被限制为 1，透明背景可能不支持，部分非标准尺寸可能失败。应用会记录 UI 参数和最终 API 请求参数，便于排查界面选择和实际请求是否一致。
+如果使用 OpenAI 兼容代理，代理行为可能和官方 API 不完全一致。例如：
+
+- `n` 可能被限制为 1
+- 透明背景可能不支持
+- 部分尺寸可能不支持
+- 返回格式可能和官方接口略有差异
+
+应用会记录界面参数和最终 API 请求参数，方便排查界面选择和实际请求是否一致。

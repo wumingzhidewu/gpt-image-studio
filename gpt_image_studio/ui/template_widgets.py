@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QFrame, QLabel, QVBoxLayout
 
 class TemplateCard(QFrame):
     selected = pyqtSignal(str)
+    activated = pyqtSignal(str)
 
     def __init__(self, template: dict, parent=None):
         super().__init__(parent)
@@ -39,3 +40,7 @@ class TemplateCard(QFrame):
     def mousePressEvent(self, e):
         if e.button() == Qt.MouseButton.LeftButton:
             self.selected.emit(self.template.get("prompt", ""))
+
+    def mouseDoubleClickEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton:
+            self.activated.emit(self.template.get("prompt", ""))
