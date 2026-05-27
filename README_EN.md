@@ -187,8 +187,8 @@ dist/GPT-Image-Studio.exe
 Maintainers can publish a release by pushing a version tag:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 Tags matching `v*` trigger the GitHub Actions workflow. The workflow runs source checks, builds the standalone Windows executable with PyInstaller, creates a GitHub Release, and uploads the `.exe` file.

@@ -187,8 +187,8 @@ dist/GPT-Image-Studio.exe
 维护者推送版本标签即可触发 GitHub Actions 自动构建和发布：
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 匹配 `v*` 的标签会触发 Windows 构建流程：运行源码检查，使用 PyInstaller 构建免安装 exe，并把 `.exe` 上传到 GitHub Release。
